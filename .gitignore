@@ -3,6 +3,9 @@
 # Private daily logs / journal / state
 memory/
 
+# Secrets (tokens, URLs)
+secrets/
+
 # Common noise
 .DS_Store
 *.swp
