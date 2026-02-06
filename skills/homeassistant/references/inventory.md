@@ -1,17 +1,21 @@
 # Home Assistant Control Inventory
 
 Source: https://ghar.nicolaischmid.de
-Generated: 2026-02-06T10:56:02.616Z
+Generated: 2026-02-06T13:50:29.100Z
 
 ## Areas
-- living_room, kitchen, bedroom, bathroom, balcony, hallway
+- living_room, kitchen, bedroom, bathroom, balcony, hallway, extra_room
 
 ## Summary
 - Entities: **162**
-- Areas with entities: **6**
+- Areas with entities: **7**
 
-## Bathroom (4)
-### switch (3)
+## Bathroom (6)
+### light (1)
+- `light.bathroom_mini_light` — [Bathroom] Mini Light = **off**
+
+### switch (4)
+- `switch.bathroom_motion_trigger_indicator` — [Bathroom] Motion Trigger indicator = **off**
 - `switch.robi_child_lock` — Child lock = **unavailable**
 - `switch.robi_do_not_disturb` — Do not disturb = **unavailable**
 - `switch.roborock_vacuum_a117_internet_access` — roborock-vacuum-a117 Internet Access = **unavailable**
@@ -19,14 +23,41 @@ Generated: 2026-02-06T10:56:02.616Z
 ### vacuum (1)
 - `vacuum.robi` = **unavailable**
 
-## Bedroom (4)
-### switch (2)
+## Bedroom (11)
+### switch (8)
+- `switch.schlafzimmer_child_lock` — [Schlafzimmer] Child lock = **off**
 - `switch.schlafzimmer_lichterkette` — unused 2 = **off**
 - `switch.schlafzimmer_lichterkette_child_lock` — unused 2 Child lock = **off**
+- `switch.schlafzimmer_mini_lamp` — [Schlafzimmer] Mini Lamp = **off**
+- `switch.schlafzimmer_mini_lamp_child_lock` — [Schlafzimmer] Mini Lamp Child lock = **off**
+- `switch.schlafzimmer_schedule` — [Schlafzimmer] Schedule = **off**
+- `switch.schlafzimmer_valve_detection` — [Schlafzimmer] Valve detection = **on**
+- `switch.schlafzimmer_window_detection` — [Schlafzimmer] Window detection = **on**
+
+### climate (1)
+- `climate.schlafzimmer` — [Schlafzimmer] = **heat**
 
 ### automation (2)
 - `automation.new_automation` — [Schreibtisch] Motion On = **off**
 - `automation.schreibtisch_motion_off` — [Schreibtisch] Motion Off = **on**
+
+## Extra Room (11)
+### light (1)
+- `light.adam_licht` — [Adam] Licht = **off**
+
+### switch (8)
+- `switch.adam_left_child_lock` — [Adam] Left Child lock = **off**
+- `switch.adam_left_schedule` — [Adam] Left Schedule = **off**
+- `switch.adam_left_valve_detection` — [Adam] Left Valve detection = **on**
+- `switch.adam_left_window_detection` — [Adam] Left Window detection = **on**
+- `switch.adam_right_child_lock` — [Adam] Right Child lock = **off**
+- `switch.adam_right_schedule` — [Adam] Right Schedule = **off**
+- `switch.adam_right_valve_detection` — [Adam] Right Valve detection = **on**
+- `switch.adam_right_window_detection` — [Adam] Right Window detection = **on**
+
+### climate (2)
+- `climate.adam_left` — [Adam] Left = **off**
+- `climate.adam_right` — [Adam] Right = **off**
 
 ## Hallway (3)
 ### light (1)
@@ -36,24 +67,37 @@ Generated: 2026-02-06T10:56:02.616Z
 - `switch.doorman_s3_ring_to_open` — Doorman S3 Ring To Open = **off**
 - `switch.doorman_s3_setup_mode` — Doorman S3 Setup Mode = **off**
 
-## Kitchen (1)
-### switch (1)
+## Kitchen (3)
+### switch (3)
+- `switch.kitchen_led` — [Kitchen] LED = **off**
+- `switch.kitchen_led_child_lock` — [Kitchen] LED Child lock = **off**
 - `switch.roborock_vacuum_a70_internet_access` — roborock-vacuum-a70 Internet Access = **unavailable**
 
-## Living Room (15)
-### switch (10)
+## Living Room (26)
+### switch (20)
 - `switch.5524f7badb9a891a_fritz_box_internet_access` — Android Internet Access = **unavailable**
 - `switch.fritz_box_6660_cable_wi_fi_0_2_4ghz` — FRITZ!Box 6660 Cable Wi-Fi 0 (2.4Ghz) = **unavailable**
 - `switch.fritz_box_6660_cable_wi_fi_0_5ghz` — FRITZ!Box 6660 Cable Wi-Fi 0 (5Ghz) = **unavailable**
 - `switch.fritz_box_6660_cable_wi_fi_fritz_box_gastzugang` — FRITZ!Box 6660 Cable Wi-Fi FRITZ!Box Gastzugang = **unavailable**
+- `switch.hall_circle` — [Hall] Circle = **off**
+- `switch.hall_circle_child_lock` — [Hall] Circle Child lock = **off**
+- `switch.hall_fairy_lights_books` — [Hall] Fairy Lights Books = **off**
+- `switch.hall_fairy_lights_books_child_lock` — [Hall] Fairy Lights Books Child lock = **off**
+- `switch.hall_sunlight` — [Hall] Sunlight = **off**
+- `switch.hall_sunlight_child_lock` — [Hall] Sunlight Child lock = **off**
 - `switch.wohnzimmer_lichterkette_plattenspieler` — [Wohnzimmer] Lichterkette Plattenspieler = **off**
 - `switch.wohnzimmer_lichterkette_plattenspieler_child_lock` — [Wohnzimmer] Lichterkette Plattenspieler Child lock = **off**
+- `switch.wohnzimmer_links_child_lock` — [Wohnzimmer] Links Child lock = **off**
+- `switch.wohnzimmer_links_schedule` — [Wohnzimmer] Links Schedule = **off**
+- `switch.wohnzimmer_links_valve_detection` — [Wohnzimmer] Links Valve detection = **on**
+- `switch.wohnzimmer_links_window_detection` — [Wohnzimmer] Links Window detection = **off**
 - `switch.wohzimmer_thermostat_child_lock` — [Wohzimmer] Thermostat Child lock = **unknown**
 - `switch.wohzimmer_thermostat_schedule` — [Wohzimmer] Thermostat Schedule = **off**
 - `switch.wohzimmer_thermostat_valve_detection_2` — [Wohzimmer] Thermostat Valve detection = **on**
 - `switch.wohzimmer_thermostat_window_detection_2` — [Wohzimmer] Thermostat Window detection = **on**
 
-### climate (1)
+### climate (2)
+- `climate.wohnzimmer_links` — [Wohnzimmer] Links = **heat**
 - `climate.wohzimmer_thermostat` — [Wohzimmer] Thermostat = **off**
 
 ### media_player (2)
@@ -64,35 +108,16 @@ Generated: 2026-02-06T10:56:02.616Z
 - `scene.study` — Study = **2025-04-13T13:48:02.496791+00:00**
 - `scene.watching_tv` — Watching TV = **2025-11-20T13:01:05.704379+00:00**
 
-## Unassigned (135)
-### light (2)
-- `light.adam_licht` — [Adam] Licht = **off**
-- `light.bathroom_mini_light` — [Bathroom] Mini Light = **off**
-
-### switch (103)
+## Unassigned (102)
+### switch (76)
 - `switch.5b7b887a_8397_4641_b491_829e854b40b8_internet_access` — iPhone Internet Access = **unavailable**
 - `switch.90ee6e64_483f_4eb5_9a44_e7d16d75d349_internet_access` — 370e3b52-b713-4dc7-ab42-b9d0b7b66fc5 Internet Access = **unavailable**
-- `switch.adam_left_child_lock` — [Adam] Left Child lock = **off**
-- `switch.adam_left_schedule` — [Adam] Left Schedule = **off**
-- `switch.adam_left_valve_detection` — [Adam] Left Valve detection = **on**
-- `switch.adam_left_window_detection` — [Adam] Left Window detection = **on**
-- `switch.adam_right_child_lock` — [Adam] Right Child lock = **off**
-- `switch.adam_right_schedule` — [Adam] Right Schedule = **off**
-- `switch.adam_right_valve_detection` — [Adam] Right Valve detection = **on**
-- `switch.adam_right_window_detection` — [Adam] Right Window detection = **on**
 - `switch.balkon_lichterkette_unassigned` — [Balkon] Lichterkette_unassigned = **off**
 - `switch.balkon_lichterkette_unassigned_child_lock` — [Balkon] Lichterkette_unassigned Child lock = **off**
-- `switch.bathroom_motion_trigger_indicator` — [Bathroom] Motion Trigger indicator = **off**
 - `switch.c02dt82cq6lr_internet_access` — C02DT82CQ6LR Internet Access = **unavailable**
 - `switch.c93nwwl2n9_internet_access` — C93NWWL2N9 Internet Access = **unavailable**
 - `switch.epsonf5c13c_internet_access` — scanner Internet Access = **unavailable**
 - `switch.f9ktpw0yqt_internet_access` — F9KTPW0YQT Internet Access = **unavailable**
-- `switch.hall_circle` — [Hall] Circle = **off**
-- `switch.hall_circle_child_lock` — [Hall] Circle Child lock = **off**
-- `switch.hall_fairy_lights_books` — [Hall] Fairy Lights Books = **off**
-- `switch.hall_fairy_lights_books_child_lock` — [Hall] Fairy Lights Books Child lock = **off**
-- `switch.hall_sunlight` — [Hall] Sunlight = **off**
-- `switch.hall_sunlight_child_lock` — [Hall] Sunlight Child lock = **off**
 - `switch.harshs_air_internet_access` — Harshs-Air Internet Access = **unavailable**
 - `switch.homeassistant_internet_access` — homeassistant Internet Access = **unavailable**
 - `switch.homeassistant_internet_access_2` — homeassistant Internet Access = **unavailable**
@@ -111,8 +136,6 @@ Generated: 2026-02-06T10:56:02.616Z
 - `switch.iphone_von_monika_internet_access_2` — iPhone-von-Monika Internet Access = **unavailable**
 - `switch.iphone_von_monika_internet_access_3` — iPhone-von-Monika Internet Access = **unavailable**
 - `switch.iphone_von_monika_internet_access_4` — iPhone-von-Monika Internet Access = **unavailable**
-- `switch.kitchen_led` — [Kitchen] LED = **off**
-- `switch.kitchen_led_child_lock` — [Kitchen] LED Child lock = **off**
 - `switch.lite_internet_access` — Lite Internet Access = **unavailable**
 - `switch.macbook_pro_internet_access` — nicolais-MBP Internet Access = **unavailable**
 - `switch.macbookpro_internet_access` — MacBookPro Internet Access = **unavailable**
@@ -138,19 +161,13 @@ Generated: 2026-02-06T10:56:02.616Z
 - `switch.pc_7a_04_ab_c6_77_63_internet_access` — mansis-iPhone Internet Access = **unavailable**
 - `switch.pc_ce_09_f2_a3_0d_98_internet_access` — mansis-iPhone Internet Access = **unavailable**
 - `switch.rigdtt_internet_access` — rigdtt Internet Access = **unavailable**
-- `switch.schlafzimmer_child_lock` — [Schlafzimmer] Child lock = **off**
 - `switch.schlafzimmer_ir_learn_ir_code` — [Schlafzimmer] IR Learn ir code = **unknown**
-- `switch.schlafzimmer_mini_lamp` — [Schlafzimmer] Mini Lamp = **off**
-- `switch.schlafzimmer_mini_lamp_child_lock` — [Schlafzimmer] Mini Lamp Child lock = **off**
-- `switch.schlafzimmer_schedule` — [Schlafzimmer] Schedule = **off**
 - `switch.schlafzimmer_schreibtisch_unassigned` — [Schlafzimmer] Schreibtisch _unassigned = **off**
 - `switch.schlafzimmer_schreibtisch_unassigned_child_lock` — [Schlafzimmer] Schreibtisch _unassigned Child lock = **off**
 - `switch.schlafzimmer_termostat_unassigned_child_lock` — [Schlafzimmer] Termostat _unassigned Child lock = **unknown**
 - `switch.schlafzimmer_termostat_unassigned_schedule` — [Schlafzimmer] Termostat _unassigned Schedule = **off**
 - `switch.schlafzimmer_termostat_unassigned_valve_detection` — [Schlafzimmer] Termostat _unassigned Valve detection = **on**
 - `switch.schlafzimmer_termostat_unassigned_window_detection` — [Schlafzimmer] Termostat _unassigned Window detection = **on**
-- `switch.schlafzimmer_valve_detection` — [Schlafzimmer] Valve detection = **on**
-- `switch.schlafzimmer_window_detection` — [Schlafzimmer] Window detection = **on**
 - `switch.shrutis_ipad_internet_access` — Shrutis-iPad Internet Access = **unavailable**
 - `switch.timemachine_internet_access` — timemachine Internet Access = **unavailable**
 - `switch.tower_internet_access` — Tower Internet Access = **unavailable**
@@ -162,10 +179,6 @@ Generated: 2026-02-06T10:56:02.616Z
 - `switch.wohnzimmer_fan_unassigned_child_lock` — [Wohnzimmer] Fan_unassigned Child lock = **off**
 - `switch.wohnzimmer_lichterkette` — [Wohnzimmer] Lichterkette = **off**
 - `switch.wohnzimmer_lichterkette_child_lock` — [Wohnzimmer] Lichterkette Child lock = **off**
-- `switch.wohnzimmer_links_child_lock` — [Wohnzimmer] Links Child lock = **off**
-- `switch.wohnzimmer_links_schedule` — [Wohnzimmer] Links Schedule = **off**
-- `switch.wohnzimmer_links_valve_detection` — [Wohnzimmer] Links Valve detection = **on**
-- `switch.wohnzimmer_links_window_detection` — [Wohnzimmer] Links Window detection = **off**
 - `switch.wohnzimmer_musik_unassigned` — [Wohnzimmer] Musik_unassigned = **off**
 - `switch.wohnzimmer_musik_unassigned_child_lock` — [Wohnzimmer] Musik_unassigned Child lock = **off**
 - `switch.wohnzimmer_stehlampe` — [Wohnzimmer] Stehlampe = **on**
@@ -174,12 +187,8 @@ Generated: 2026-02-06T10:56:02.616Z
 - `switch.xx_unused_child_lock` — xx unused Child lock = **off**
 - `switch.zigbee2mqtt_bridge_permit_join` — Zigbee2MQTT Bridge Permit join = **off**
 
-### climate (5)
-- `climate.adam_left` — [Adam] Left = **off**
-- `climate.adam_right` — [Adam] Right = **off**
-- `climate.schlafzimmer` — [Schlafzimmer] = **heat**
+### climate (1)
 - `climate.schlafzimmer_termostat_unassigned` — [Schlafzimmer] Termostat _unassigned = **off**
-- `climate.wohnzimmer_links` — [Wohnzimmer] Links = **heat**
 
 ### media_player (1)
 - `media_player.tx_nr609_zone_2` — TX-NR609 Zone 2 = **unavailable**
