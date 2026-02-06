@@ -142,12 +142,58 @@ function shouldIgnoreEmail(e) {
   return false;
 }
 
-function formatEmailLine(e) {
-  const from = e?.from?.name ? `${e.from.name} <${e.from.addr}>` : e?.from?.addr || "(unknown)";
-  const subj = e?.subject || "(no subject)";
-  const date = e?.date || "";
+function senderProse(e) {
+  const name = (e?.from?.name || "").trim();
+  const addr = (e?.from?.addr || "").trim();
+  const domain = addr.includes("@") ? addr.split("@").pop() : "";
+
+  if (name && domain) return `${name} (${domain})`;
+  if (name) return name;
+
+  // fallback: use domain brand-ish first label (e.g., cosma.app -> cosma)
+  if (domain) return domain.split(".")[0] || domain;
+  return addr || "(unknown)";
+}
+
+function cleanSubject(subj) {
+  let s = String(subj || "").trim();
+  s = s.replace(/^\s*(re|fw|fwd)\s*:\s*/i, "");
+  s = s.replace(/^test\s*:\s*/i, "");
+  s = s.replace(/\s+/g, " ");
+  return s;
+}
+
+function isVagueSubject(subj) {
+  const s = cleanSubject(subj).toLowerCase();
+  if (!s) return true;
+  if (s.length <= 12) return true;
+  // very generic subjects
+  if (["update", "newsletter", "reminder", "notification", "hello"].includes(s)) return true;
+  if (/\b(update|newsletter|reminder|notification)\b/.test(s) && s.length < 25) return true;
+  return false;
+}
+
+function stripHtml(txt) {
+  return String(txt || "")
+    .replace(/<style[\s\S]*?<\/style>/gi, " ")
+    .replace(/<script[\s\S]*?<\/script>/gi, " ")
+    .replace(/<[^>]+>/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function summarizeEmail(e, bodyText = "") {
   const unread = (e?.flags || []).includes("Seen") ? "" : "(unread) ";
-  return `- ${date} — ${unread}${from} — ${subj}`;
+  const from = senderProse(e);
+  const subj = cleanSubject(e?.subject || "(no subject)");
+
+  if (bodyText) {
+    // keep it short and scannable
+    const snippet = stripHtml(bodyText).slice(0, 180);
+    return `- ${unread}${from} — ${subj} — ${snippet}${snippet.length === 180 ? "…" : ""}`;
+  }
+
+  return `- ${unread}${from} — ${subj}`;
 }
 
 // 2) Yesterday summary (best-effort parse)
@@ -211,7 +257,7 @@ function blankLine() {
 }
 
 function boldHeadline(n, title) {
-  // Add new lines ABOVE a number, but not below it.
+  // Visual hierarchy: gap ABOVE. Content should start immediately below headline.
   blankLine();
   console.log(`**${n}) ${title}**`);
 }
@@ -226,7 +272,26 @@ if (inboxMeta.unreadTotal !== null) {
 }
 if (topInbox.length) {
   console.log("- Wichtigste / neueste (Top 5):");
-  for (const e of topInbox) console.log(`  ${formatEmailLine(e)}`);
+
+  for (const e of topInbox) {
+    let body = "";
+
+    // If subject looks vague, open the email (preview = don't mark seen) and add a short snippet.
+    if (isVagueSubject(e?.subject)) {
+      try {
+        const rawMsg = run(
+          "himalaya",
+          ["message", "read", "--account", account, "--folder", "INBOX", "--preview", "--no-headers", e.id],
+          { allowFail: true },
+        );
+        body = rawMsg || "";
+      } catch {
+        body = "";
+      }
+    }
+
+    console.log(`  ${summarizeEmail(e, body)}`);
+  }
 } else {
   console.log("- (Keine Emails gefunden / Abruf fehlgeschlagen)");
 }
@@ -274,7 +339,20 @@ function costsCompactLine(costsObj) {
 }
 
 blankLine();
-console.log(costs ? costsCompactLine(costs) : "**3) Costs** (unavailable)");
+if (costs) {
+  // requested: add a line break (costs on 2 lines)
+  const line = costsCompactLine(costs);
+  const parts = line.split(" • ");
+  // keep header+total on first line, rest on second line
+  if (parts.length > 1) {
+    console.log(parts[0]);
+    console.log(parts.slice(1).join(" • "));
+  } else {
+    console.log(line);
+  }
+} else {
+  console.log("**3) Costs** (unavailable)");
+}
 
 // 4) GitHub pending reviews (best-effort)
 let ghReviewItems = null;
