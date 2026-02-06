@@ -10,7 +10,12 @@ This workspace sometimes clones external repos for reading/editing.
 - Local path: `/root/.openclaw/workspace/repos/cosma`
 - Purpose: Source for Cosma product context + interview prep (Ask Attio comparison).
 
-## 2) Obsidian vault
+## 2) ai-next
+- GitHub: `apex-cc/ai-next`
+- SSH remote: `git@github.com:apex-cc/ai-next.git`
+- Local path: `/root/.openclaw/workspace/repos/ai-next`
+
+## 3) Obsidian vault
 - GitHub: `NicolaiSchmid/vault` (repo moved from `nicolaischmid/vault`)
 - SSH remote (preferred): `git@github.com:NicolaiSchmid/vault.git`
 - Local path: `/root/.openclaw/workspace/repos/vault`
