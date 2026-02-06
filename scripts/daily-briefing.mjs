@@ -207,12 +207,26 @@ console.log("");
 console.log("## 3) Costs (gestern)");
 console.log(costLine);
 
+// 4) GitHub pending reviews (best-effort)
+let ghReviewsLines = [];
+try {
+  const raw = run("node", ["scripts/github-reviews.mjs"], { allowFail: true });
+  ghReviewsLines = raw ? raw.split("\n").map((l) => l.trim()).filter(Boolean) : [];
+} catch {
+  ghReviewsLines = ["- (GitHub reviews unavailable)"];
+}
+
 console.log("");
-console.log("## 4) Today — Fokus & Todos");
+console.log("## 4) GitHub — Review requests");
+if (ghReviewsLines.length) for (const l of ghReviewsLines) console.log(l);
+else console.log("- (none)");
+
+console.log("");
+console.log("## 5) Today — Fokus & Todos");
 console.log("- Top 3:");
 console.log("  1) ___");
 console.log("  2) ___");
 console.log("  3) ___");
 console.log("");
-console.log("## 5) Fragen / Entscheidungen (max 1–2)");
+console.log("## 6) Fragen / Entscheidungen (max 1–2)");
 console.log("- ___");
