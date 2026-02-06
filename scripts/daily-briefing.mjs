@@ -124,6 +124,24 @@ try {
   // keep placeholders
 }
 
+function shouldIgnoreEmail(e) {
+  const fromAddr = (e?.from?.addr || "").toLowerCase();
+  const fromName = (e?.from?.name || "").toLowerCase();
+  const subj = (e?.subject || "").toLowerCase();
+
+  // User rules (Nicolai):
+  // - ImmoScout new offers don't matter
+  // - thinkimmo doesn't matter
+  if (fromAddr.includes("immobilienscout24")) return true;
+  if (fromName.includes("immobilienscout24")) return true;
+  if (subj.includes("immobilienscout")) return true;
+
+  if (fromAddr.includes("thinkimmo")) return true;
+  if (subj.includes("thinkimmo")) return true;
+
+  return false;
+}
+
 function formatEmailLine(e) {
   const from = e?.from?.name ? `${e.from.name} <${e.from.addr}>` : e?.from?.addr || "(unknown)";
   const subj = e?.subject || "(no subject)";
@@ -181,11 +199,12 @@ function topModelsLine(costsObj) {
 }
 
 const costLine = costs
-  ? `- Est. cost: **$${((costs.cost?.estimated ?? costs.cost?.known) ?? 0).toFixed(4)}** • tokens: **${costs.tokens?.total ?? "?"}**\n- Top models: ${topModelsLine(costs)}`
+  ? `- $${(((costs.cost?.estimated ?? costs.cost?.known) ?? 0)).toFixed(2)}\n- Models: ${topModelsLine(costs)}`
   : "- (Cost data unavailable)";
 
 // Output
-const topInbox = inbox.slice(0, 5);
+// Apply ignore rules + take top 5
+const topInbox = inbox.filter((e) => !shouldIgnoreEmail(e)).slice(0, 5);
 
 console.log(`**Daily Briefing — ${today} (Berlin)**`);
 console.log("");
@@ -208,25 +227,55 @@ console.log("## 3) Costs (gestern)");
 console.log(costLine);
 
 // 4) GitHub pending reviews (best-effort)
-let ghReviewsLines = [];
+let ghReviewItems = null;
 try {
-  const raw = run("node", ["scripts/github-reviews.mjs"], { allowFail: true });
-  ghReviewsLines = raw ? raw.split("\n").map((l) => l.trim()).filter(Boolean) : [];
+  const raw = run("node", ["scripts/github-reviews.mjs", "--json"], { allowFail: true });
+  ghReviewItems = jsonOrNull(raw);
 } catch {
-  ghReviewsLines = ["- (GitHub reviews unavailable)"];
+  ghReviewItems = null;
+}
+
+function ghSummary(title) {
+  let t = String(title || "");
+  t = t.replace(/^feat\([^)]*\):\s*/i, "");
+  t = t.replace(/^fix\([^)]*\):\s*/i, "");
+  t = t.replace(/^chore\([^)]*\):\s*/i, "");
+  t = t.replace(/^refactor\([^)]*\):\s*/i, "");
+  t = t.replace(/\s+/g, " ").trim();
+  return t ? t[0].toUpperCase() + t.slice(1) : "(no title)";
 }
 
 console.log("");
 console.log("## 4) GitHub — Review requests");
-if (ghReviewsLines.length) for (const l of ghReviewsLines) console.log(l);
-else console.log("- (none)");
+if (!ghReviewItems || ghReviewItems.ok !== true) {
+  console.log("- (GitHub reviews unavailable)");
+} else if (!ghReviewItems.items?.length) {
+  console.log("- 0");
+} else {
+  for (const it of ghReviewItems.items) {
+    const repo = it?.repository?.nameWithOwner || "(unknown repo)";
+    const author = it?.author?.login || "(unknown)";
+    const url = it?.url || "";
+    const sum = ghSummary(it?.title);
+    // Telegram doesn't support custom link text reliably everywhere, so print: [summary] + URL
+    console.log(`- **${repo}** (${author}) — ${sum}`);
+    if (url) console.log(`  ${url}`);
+  }
+}
 
 console.log("");
-console.log("## 5) Today — Fokus & Todos");
-console.log("- Top 3:");
-console.log("  1) ___");
-console.log("  2) ___");
-console.log("  3) ___");
-console.log("");
-console.log("## 6) Fragen / Entscheidungen (max 1–2)");
-console.log("- ___");
+// 5) Today focus + questions (optional; skip if empty)
+const focus = [];
+const questions = [];
+
+if (focus.length) {
+  console.log("");
+  console.log("## 5) Today — Fokus");
+  for (const l of focus) console.log(l);
+}
+
+if (questions.length) {
+  console.log("");
+  console.log("## 6) Fragen / Entscheidungen");
+  for (const l of questions) console.log(l);
+}
