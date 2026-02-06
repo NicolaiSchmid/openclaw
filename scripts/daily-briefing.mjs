@@ -208,14 +208,6 @@ function isVagueSubject(subj) {
   return false;
 }
 
-function stripUrls(s) {
-  return String(s || "")
-    .replace(/https?:\/\/\S+/gi, "")
-    .replace(/\bwww\.[^\s)\]]+/gi, "")
-    .replace(/\s+/g, " ")
-    .trim();
-}
-
 function stripHtml(txt) {
   return String(txt || "")
     .replace(/<style[\s\S]*?<\/style>/gi, " ")
@@ -229,7 +221,13 @@ function firstSentence(txt) {
   const s = stripUrls(stripHtml(txt));
   if (!s) return "";
   // split on sentence-ish boundaries
-  const parts = s.split(/(?<=[.!?])\s+|\n+/).map((p) => p.trim()).filter(Boolean);
+  const parts = s
+    .split(/(?<=[.!?])\s+|\n+/)
+    .map((p) => p.trim())
+    .filter(Boolean)
+    .map((p) => p.replace(/\bview this post on the web\b\s*(at\b)?\s*/gi, "").trim())
+    .map((p) => p.replace(/\bat\b\s*/gi, " ").trim())
+    .filter(Boolean);
   return (parts[0] || s).slice(0, 180);
 }
 
@@ -239,15 +237,15 @@ function subjectSummary(subj) {
   s = s.replace(/^peec ai onboarding\s*\((\d+\/\d+)\)\s*-\s*/i, "Peec onboarding $1: ");
   s = s.replace(/^new comment reply on\s*/i, "Comment reply on ");
   s = stripUrls(s);
-  // remove leftover boilerplate if a URL was stripped
-  s = s.replace(/\bview this post on the web\b\s*(at)?\s*$/i, "").trim();
+  s = s.replace(/\bview this post on the web\b\s*(at\b)?\s*/gi, "");
+  s = s.replace(/\bat\b\s*/gi, " ");
+  s = s.replace(/\s+/g, " ").trim();
   return s;
 }
 
 function summarizeEmail(e, bodyText = "") {
   const from = senderShort(e);
-  const rawSubj = subjectSummary(e?.subject || "(no subject)");
-  const subj = stripUrls(rawSubj);
+  const subj = subjectSummary(e?.subject || "(no subject)");
 
   if (bodyText) {
     // if subject is vague, lead with a short content summary
@@ -328,7 +326,8 @@ function zwspLine() {
 }
 
 function visualGap() {
-  // ~3 blank lines using zero-width-space to force spacing in Telegram
+  // ~4 blank lines using zero-width-space to force spacing in Telegram
+  zwspLine();
   zwspLine();
   zwspLine();
   zwspLine();
@@ -351,8 +350,9 @@ if (topInbox.length) {
   for (const e of topInbox) {
     let body = "";
 
-    // If subject looks vague, open the email (preview = don't mark seen) and add a short content summary.
-    if (isVagueSubject(e?.subject)) {
+    // If subject looks vague OR too short, open the email (preview = don't mark seen) and add a short content summary.
+    const needsBody = isVagueSubject(e?.subject) || cleanSubject(e?.subject || "").trim().length <= 8;
+    if (needsBody) {
       try {
         const rawMsg = run(
           "himalaya",
