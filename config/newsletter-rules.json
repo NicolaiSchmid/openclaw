@@ -1,0 +1,52 @@
+{
+  "version": 1,
+  "targetFolder": "Reading",
+  "sourceFolder": "INBOX",
+  "allow": {
+    "domains": [
+      "substack.com",
+      "mail.beehiiv.com",
+      "convertkit.com",
+      "buttondown.email"
+    ],
+    "addresses": [
+      "noreply@bitsaboutmoney.com",
+      "julian@mailjulian.com"
+    ]
+  },
+  "block": {
+    "domains": [],
+    "addresses": [],
+    "keywords": [
+      "cosma",
+      "immodo",
+      "immobilienscout",
+      "thinkimmo",
+      "verify",
+      "verification",
+      "login",
+      "security",
+      "invoice",
+      "receipt",
+      "order",
+      "shipping",
+      "password",
+      "2fa",
+      "otp",
+      "confirm"
+    ]
+  },
+  "signals": {
+    "subjectKeywords": [
+      "newsletter",
+      "digest",
+      "weekly",
+      "issue",
+      "edition"
+    ]
+  },
+  "thresholds": {
+    "minPropose": 25,
+    "defaultMoveMin": 65
+  }
+}
