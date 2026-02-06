@@ -23,6 +23,13 @@ Optional env overrides:
 - `HA_URL` (default taken from `secrets/ha_url` if present)
 - `HA_TOKEN` (default read from `secrets/ha_token`)
 
+## Inventory / context
+- The current device/entity overview lives in:
+  - `skills/homeassistant/references/inventory-nice.md` (most useful controls)
+  - `skills/homeassistant/references/inventory.md` (broader controllable list)
+- Refresh anytime by running:
+  - `node scripts/ha-refresh-context.mjs`
+
 ## Commands
 Wrapper script (JSON by default):
 
