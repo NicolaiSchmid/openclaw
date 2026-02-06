@@ -142,17 +142,40 @@ function shouldIgnoreEmail(e) {
   return false;
 }
 
-function senderProse(e) {
-  const name = (e?.from?.name || "").trim();
-  const addr = (e?.from?.addr || "").trim();
-  const domain = addr.includes("@") ? addr.split("@").pop() : "";
+function senderShort(e) {
+  const name = String(e?.from?.name || "").trim();
+  const addr = String(e?.from?.addr || "").trim();
 
-  if (name && domain) return `${name} (${domain})`;
-  if (name) return name;
+  const genericLocals = new Set([
+    "info",
+    "hello",
+    "support",
+    "team",
+    "contact",
+    "noreply",
+    "no-reply",
+    "notifications",
+    "notification",
+    "mail",
+    "mailer",
+  ]);
 
-  // fallback: use domain brand-ish first label (e.g., cosma.app -> cosma)
-  if (domain) return domain.split(".")[0] || domain;
-  return addr || "(unknown)";
+  if (addr.includes("@")) {
+    const [localRaw, domainRaw] = addr.split("@");
+    const local = (localRaw || "").toLowerCase();
+    const domain = (domainRaw || "").toLowerCase();
+    const domainLabel = (domain.split(".")[0] || domain).replace(/[^a-z0-9-]/g, "");
+
+    if (!local || genericLocals.has(local)) return domainLabel || domain || name || "(unknown)";
+    if (!domainLabel) return local;
+
+    // wanted format example: marius@peec
+    return `${local}@${domainLabel}`;
+  }
+
+  // fallback to name (lowercased, compact)
+  if (name) return name.toLowerCase().replace(/\s+/g, "");
+  return "(unknown)";
 }
 
 function cleanSubject(subj) {
@@ -182,18 +205,34 @@ function stripHtml(txt) {
     .trim();
 }
 
+function firstSentence(txt) {
+  const s = stripHtml(txt);
+  if (!s) return "";
+  // split on sentence-ish boundaries
+  const parts = s.split(/(?<=[.!?])\s+|\n+/).map((p) => p.trim()).filter(Boolean);
+  return (parts[0] || s).slice(0, 180);
+}
+
+function subjectSummary(subj) {
+  // lightweight rewrite to make subjects scan-friendly
+  let s = cleanSubject(subj);
+  s = s.replace(/^peec ai onboarding\s*\((\d+\/\d+)\)\s*-\s*/i, "Peec onboarding $1: ");
+  s = s.replace(/^new comment reply on\s*/i, "Comment reply on ");
+  return s;
+}
+
 function summarizeEmail(e, bodyText = "") {
-  const unread = (e?.flags || []).includes("Seen") ? "" : "(unread) ";
-  const from = senderProse(e);
-  const subj = cleanSubject(e?.subject || "(no subject)");
+  const from = senderShort(e);
+  const subj = subjectSummary(e?.subject || "(no subject)");
 
   if (bodyText) {
-    // keep it short and scannable
-    const snippet = stripHtml(bodyText).slice(0, 180);
-    return `- ${unread}${from} — ${subj} — ${snippet}${snippet.length === 180 ? "…" : ""}`;
+    // if subject is vague, lead with a short content summary
+    const sent = firstSentence(bodyText);
+    const content = sent ? ` — ${sent}${sent.length === 180 ? "…" : ""}` : "";
+    return `• ${from} • ${subj}${content}`;
   }
 
-  return `- ${unread}${from} — ${subj}`;
+  return `• ${from} • ${subj}`;
 }
 
 // 2) Yesterday summary (best-effort parse)
@@ -249,15 +288,17 @@ const costLine = costs
   : "- (Cost data unavailable)";
 
 // Output
-// Apply ignore rules + take top 5
-const topInbox = inbox.filter((e) => !shouldIgnoreEmail(e)).slice(0, 5);
+// Apply ignore rules + take top 10
+const topInbox = inbox.filter((e) => !shouldIgnoreEmail(e)).slice(0, 10);
 
 function blankLine() {
   console.log("");
 }
 
 function boldHeadline(n, title) {
-  // Visual hierarchy: gap ABOVE. Content should start immediately below headline.
+  // Visual hierarchy: add a big gap ABOVE (Telegram sometimes adds spacing after bold lines).
+  blankLine();
+  blankLine();
   blankLine();
   console.log(`**${n}) ${title}**`);
 }
@@ -266,22 +307,29 @@ console.log(`**Daily Briefing — ${today} (Berlin)**`);
 
 // 1) Inbox
 boldHeadline(1, "Inbox (wasc.me) — heute");
-console.log(`- Total heute: ${inboxMeta.todayTotal} (unread: ${inboxMeta.todayUnread})`);
-if (inboxMeta.unreadTotal !== null) {
-  console.log(`- Unread (approx, first page): ${inboxMeta.unreadTotal}`);
-}
 if (topInbox.length) {
-  console.log("- Wichtigste / neueste (Top 5):");
+  console.log("top 10:");
+  console.log("");
 
   for (const e of topInbox) {
     let body = "";
 
-    // If subject looks vague, open the email (preview = don't mark seen) and add a short snippet.
+    // If subject looks vague, open the email (preview = don't mark seen) and add a short content summary.
     if (isVagueSubject(e?.subject)) {
       try {
         const rawMsg = run(
           "himalaya",
-          ["message", "read", "--account", account, "--folder", "INBOX", "--preview", "--no-headers", e.id],
+          [
+            "message",
+            "read",
+            "--account",
+            account,
+            "--folder",
+            "INBOX",
+            "--preview",
+            "--no-headers",
+            e.id,
+          ],
           { allowFail: true },
         );
         body = rawMsg || "";
@@ -290,10 +338,11 @@ if (topInbox.length) {
       }
     }
 
-    console.log(`  ${summarizeEmail(e, body)}`);
+    console.log(summarizeEmail(e, body));
   }
 } else {
-  console.log("- (Keine Emails gefunden / Abruf fehlgeschlagen)");
+  console.log("top 10:");
+  console.log("• (no emails / fetch failed)");
 }
 
 // 2) Yesterday
@@ -346,7 +395,7 @@ if (costs) {
   // keep header+total on first line, rest on second line
   if (parts.length > 1) {
     console.log(parts[0]);
-    console.log(parts.slice(1).join(" • "));
+    for (const p of parts.slice(1)) console.log(`• ${p}`);
   } else {
     console.log(line);
   }
