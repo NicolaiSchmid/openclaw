@@ -2,9 +2,16 @@
 
 # Private daily logs / journal / state
 memory/
+MEMORY.md
 
 # Secrets (tokens, URLs)
 secrets/
+
+# Local clones of external repos (don’t vendor into this workspace repo)
+repos/
+
+# OS/editor cruft
+**/.DS_Store
 
 # Common noise
 .DS_Store
@@ -14,3 +21,5 @@ secrets/
 
 # Node
 node_modules/
+attio-interview-coaching.md
+/tmp/
