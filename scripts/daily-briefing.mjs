@@ -206,11 +206,24 @@ const costLine = costs
 // Apply ignore rules + take top 5
 const topInbox = inbox.filter((e) => !shouldIgnoreEmail(e)).slice(0, 5);
 
+function blankLine() {
+  console.log("");
+}
+
+function boldHeadline(n, title) {
+  // Add new lines ABOVE a number, but not below it.
+  blankLine();
+  console.log(`**${n}) ${title}**`);
+}
+
 console.log(`**Daily Briefing — ${today} (Berlin)**`);
-console.log("");
-console.log("## 1) Inbox (wasc.me) — heute");
+
+// 1) Inbox
+boldHeadline(1, "Inbox (wasc.me) — heute");
 console.log(`- Total heute: ${inboxMeta.todayTotal} (unread: ${inboxMeta.todayUnread})`);
-if (inboxMeta.unreadTotal !== null) console.log(`- Unread (approx, first page): ${inboxMeta.unreadTotal}`);
+if (inboxMeta.unreadTotal !== null) {
+  console.log(`- Unread (approx, first page): ${inboxMeta.unreadTotal}`);
+}
 if (topInbox.length) {
   console.log("- Wichtigste / neueste (Top 5):");
   for (const e of topInbox) console.log(`  ${formatEmailLine(e)}`);
@@ -218,13 +231,50 @@ if (topInbox.length) {
   console.log("- (Keine Emails gefunden / Abruf fehlgeschlagen)");
 }
 
-console.log("");
-console.log("## 2) Gestern (Kurzfassung)");
+// 2) Yesterday
+boldHeadline(2, "Gestern (Kurzfassung)");
 for (const l of ySummaryLines) console.log(l);
 
-console.log("");
-console.log("## 3) Costs (gestern)");
-console.log(costLine);
+// 3) Costs — single compact line with alias rollup
+function modelAlias(model) {
+  const m = String(model || "").toLowerCase();
+  if (m.includes("gpt-5")) return "gpt-5";
+  if (m.includes("claude-opus")) return "opus";
+  if (m.includes("kimi")) return "kimi";
+  return null;
+}
+
+function costsCompactLine(costsObj) {
+  const total = (costsObj?.cost?.estimated ?? costsObj?.cost?.known) ?? 0;
+  const byModel = costsObj?.byModel || {};
+
+  const agg = new Map();
+  for (const v of Object.values(byModel)) {
+    const model = v?.model;
+    const alias = modelAlias(model) || model;
+    const c = (v?.cost?.estimated ?? v?.cost?.known) ?? 0;
+    if (!alias) continue;
+    agg.set(alias, (agg.get(alias) || 0) + c);
+  }
+
+  const preferred = ["gpt-5", "opus", "kimi"];
+  const rest = [...agg.entries()]
+    .filter(([k]) => !preferred.includes(k))
+    .sort((a, b) => (b[1] || 0) - (a[1] || 0));
+
+  const parts = [];
+  for (const k of preferred) if (agg.has(k)) parts.push([k, agg.get(k)]);
+  for (const [k, v] of rest) parts.push([k, v]);
+
+  const modelBits = parts
+    .slice(0, 5)
+    .map(([k, v]) => `*${k}*: $${Math.round(v || 0)}`);
+
+  return `**3) Costs** $${Math.round(total)}${modelBits.length ? " • " + modelBits.join(" • ") : ""}`;
+}
+
+blankLine();
+console.log(costs ? costsCompactLine(costs) : "**3) Costs** (unavailable)");
 
 // 4) GitHub pending reviews (best-effort)
 let ghReviewItems = null;
@@ -245,37 +295,25 @@ function ghSummary(title) {
   return t ? t[0].toUpperCase() + t.slice(1) : "(no title)";
 }
 
-console.log("");
-console.log("## 4) GitHub — Review requests");
+function repoShort(nameWithOwner) {
+  const s = String(nameWithOwner || "");
+  const parts = s.split("/");
+  return parts.length === 2 ? parts[1] : s;
+}
+
+boldHeadline(4, "GitHub review requests");
 if (!ghReviewItems || ghReviewItems.ok !== true) {
   console.log("- (GitHub reviews unavailable)");
 } else if (!ghReviewItems.items?.length) {
   console.log("- 0");
 } else {
   for (const it of ghReviewItems.items) {
-    const repo = it?.repository?.nameWithOwner || "(unknown repo)";
+    const repo = repoShort(it?.repository?.nameWithOwner);
     const author = it?.author?.login || "(unknown)";
     const url = it?.url || "";
     const sum = ghSummary(it?.title);
-    // Telegram doesn't support custom link text reliably everywhere, so print: [summary] + URL
-    console.log(`- **${repo}** (${author}) — ${sum}`);
-    if (url) console.log(`  ${url}`);
+    console.log(`- **${repo}** (${author}) — ${sum}${url ? " — " + url : ""}`);
   }
 }
 
-console.log("");
-// 5) Today focus + questions (optional; skip if empty)
-const focus = [];
-const questions = [];
-
-if (focus.length) {
-  console.log("");
-  console.log("## 5) Today — Fokus");
-  for (const l of focus) console.log(l);
-}
-
-if (questions.length) {
-  console.log("");
-  console.log("## 6) Fragen / Entscheidungen");
-  for (const l of questions) console.log(l);
-}
+// Fokus/Questions omitted when empty
