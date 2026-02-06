@@ -142,6 +142,18 @@ function shouldIgnoreEmail(e) {
   return false;
 }
 
+function stripUrls(text) {
+  // Remove http(s):// URLs and www. URLs
+  let s = String(text || "");
+  // Full URLs with protocol
+  s = s.replace(/https?:\/\/[^\s<>"\])\}]+/gi, "");
+  // www. URLs without protocol
+  s = s.replace(/www\.[^\s<>"\])\}]+/gi, "");
+  // Clean up leftover artifacts
+  s = s.replace(/\s+/g, " ").trim();
+  return s;
+}
+
 function senderShort(e) {
   const name = String(e?.from?.name || "").trim();
   const addr = String(e?.from?.addr || "").trim();
@@ -196,6 +208,14 @@ function isVagueSubject(subj) {
   return false;
 }
 
+function stripUrls(s) {
+  return String(s || "")
+    .replace(/https?:\/\/\S+/gi, "")
+    .replace(/\bwww\.[^\s)\]]+/gi, "")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
 function stripHtml(txt) {
   return String(txt || "")
     .replace(/<style[\s\S]*?<\/style>/gi, " ")
@@ -206,7 +226,7 @@ function stripHtml(txt) {
 }
 
 function firstSentence(txt) {
-  const s = stripHtml(txt);
+  const s = stripUrls(stripHtml(txt));
   if (!s) return "";
   // split on sentence-ish boundaries
   const parts = s.split(/(?<=[.!?])\s+|\n+/).map((p) => p.trim()).filter(Boolean);
@@ -218,21 +238,28 @@ function subjectSummary(subj) {
   let s = cleanSubject(subj);
   s = s.replace(/^peec ai onboarding\s*\((\d+\/\d+)\)\s*-\s*/i, "Peec onboarding $1: ");
   s = s.replace(/^new comment reply on\s*/i, "Comment reply on ");
+  s = stripUrls(s);
+  // remove leftover boilerplate if a URL was stripped
+  s = s.replace(/\bview this post on the web\b\s*(at)?\s*$/i, "").trim();
   return s;
 }
 
 function summarizeEmail(e, bodyText = "") {
   const from = senderShort(e);
-  const subj = subjectSummary(e?.subject || "(no subject)");
+  const rawSubj = subjectSummary(e?.subject || "(no subject)");
+  const subj = stripUrls(rawSubj);
 
   if (bodyText) {
     // if subject is vague, lead with a short content summary
-    const sent = firstSentence(bodyText);
-    const content = sent ? ` — ${sent}${sent.length === 180 ? "…" : ""}` : "";
-    return `• ${from} • ${subj}${content}`;
+    const rawSent = firstSentence(bodyText);
+    const sent = stripUrls(rawSent);
+    const content = sent ? ` – ${sent}${sent.length >= 170 ? "…" : ""}` : "";
+    // Format: • **sender** – subject-summary (en dash)
+    return `• **${from}** – ${subj}${content}`;
   }
 
-  return `• ${from} • ${subj}`;
+  // Format: • **sender** – subject-summary (en dash)
+  return `• **${from}** – ${subj}`;
 }
 
 // 2) Yesterday summary (best-effort parse)
@@ -295,11 +322,21 @@ function blankLine() {
   console.log("");
 }
 
+// Zero-width-space line for forcing visual gaps in Telegram (which collapses consecutive blank lines)
+function zwspLine() {
+  console.log("\u200B");
+}
+
+function visualGap() {
+  // ~3 blank lines using zero-width-space to force spacing in Telegram
+  zwspLine();
+  zwspLine();
+  zwspLine();
+}
+
 function boldHeadline(n, title) {
-  // Visual hierarchy: add a big gap ABOVE (Telegram sometimes adds spacing after bold lines).
-  blankLine();
-  blankLine();
-  blankLine();
+  // Visual hierarchy: add a big gap ABOVE using zero-width-space lines
+  visualGap();
   console.log(`**${n}) ${title}**`);
 }
 
@@ -349,7 +386,7 @@ if (topInbox.length) {
 boldHeadline(2, "Gestern (Kurzfassung)");
 for (const l of ySummaryLines) console.log(l);
 
-// 3) Costs — single compact line with alias rollup
+// 3) Costs — bold heading with rounded total, then model bullets
 function modelAlias(model) {
   const m = String(model || "").toLowerCase();
   if (m.includes("gpt-5")) return "gpt-5";
@@ -358,7 +395,7 @@ function modelAlias(model) {
   return null;
 }
 
-function costsCompactLine(costsObj) {
+function printCostsSection(costsObj) {
   const total = (costsObj?.cost?.estimated ?? costsObj?.cost?.known) ?? 0;
   const byModel = costsObj?.byModel || {};
 
@@ -380,26 +417,22 @@ function costsCompactLine(costsObj) {
   for (const k of preferred) if (agg.has(k)) parts.push([k, agg.get(k)]);
   for (const [k, v] of rest) parts.push([k, v]);
 
-  const modelBits = parts
-    .slice(0, 5)
-    .map(([k, v]) => `*${k}*: $${Math.round(v || 0)}`);
-
-  return `**3) Costs** $${Math.round(total)}${modelBits.length ? " • " + modelBits.join(" • ") : ""}`;
+  // Visual gap before costs
+  visualGap();
+  
+  // Bold heading with rounded total
+  console.log(`**3) Costs $${Math.round(total)}**`);
+  
+  // Model lines as bullets
+  for (const [modelName, cost] of parts.slice(0, 5)) {
+    console.log(`• *${modelName}*: $${Math.round(cost || 0)}`);
+  }
 }
 
-blankLine();
 if (costs) {
-  // requested: add a line break (costs on 2 lines)
-  const line = costsCompactLine(costs);
-  const parts = line.split(" • ");
-  // keep header+total on first line, rest on second line
-  if (parts.length > 1) {
-    console.log(parts[0]);
-    for (const p of parts.slice(1)) console.log(`• ${p}`);
-  } else {
-    console.log(line);
-  }
+  printCostsSection(costs);
 } else {
+  visualGap();
   console.log("**3) Costs** (unavailable)");
 }
 
