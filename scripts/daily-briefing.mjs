@@ -347,6 +347,7 @@ if (topInbox.length) {
   console.log("top 10:");
   console.log("");
 
+  let i = 1;
   for (const e of topInbox) {
     let body = "";
 
@@ -375,7 +376,8 @@ if (topInbox.length) {
       }
     }
 
-    console.log(summarizeEmail(e, body));
+    console.log(`${i}) ${summarizeEmail(e, body)}`);
+    i += 1;
   }
 } else {
   console.log("top 10:");
