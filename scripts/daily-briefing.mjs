@@ -252,12 +252,12 @@ function summarizeEmail(e, bodyText = "") {
     const rawSent = firstSentence(bodyText);
     const sent = stripUrls(rawSent);
     const content = sent ? ` – ${sent}${sent.length >= 170 ? "…" : ""}` : "";
-    // Format: • **sender** – subject-summary (en dash)
-    return `• **${from}** – ${subj}${content}`;
+    // Format: **sender** – subject-summary (en dash)
+    return `**${from}** – ${subj}${content}`;
   }
 
-  // Format: • **sender** – subject-summary (en dash)
-  return `• **${from}** – ${subj}`;
+  // Format: **sender** – subject-summary (en dash)
+  return `**${from}** – ${subj}`;
 }
 
 // 2) Yesterday summary (best-effort parse)
